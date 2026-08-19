@@ -1,0 +1,288 @@
+// OmniStack Platform - Prisma Database Schema
+// PostgreSQL relational database for persistent user data, analytics, saved items, and system content
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum UserPlan {
+  FREE
+  PRO
+  ENTERPRISE
+}
+
+enum ExecutionStatus {
+  SUCCESS
+  ERROR
+  TIMEOUT
+}
+
+enum NotificationType {
+  INFO
+  SUCCESS
+  WARNING
+  SYSTEM
+  ANNOUNCEMENT
+}
+
+enum PostStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum SubscriptionStatus {
+  CREATED
+  AUTHENTICATED
+  ACTIVE
+  PENDING
+  HALTED
+  CANCELLED
+  COMPLETED
+  EXPIRED
+  PAUSED
+}
+
+model User {
+  id                 String          @id @default(cuid())
+  email              String          @unique
+  name               String?
+  avatarUrl          String?
+  role               UserRole        @default(USER)
+  plan               UserPlan        @default(FREE)
+  razorpayCustomerId String?         @unique
+  passwordHash       String?         // Hashed using secure bcryptjs with work factor 12
+  emailVerified      DateTime?
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+
+  profile       Profile?
+  sessions      Session[]
+  executions    ToolExecution[]
+  savedTools    SavedTool[]
+  notifications Notification[]
+  apiKeys       ApiKey[]
+  usageRecords  UsageRecord[]
+  subscription  Subscription?
+
+  @@index([email])
+  @@index([razorpayCustomerId])
+  @@map("users")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt    DateTime
+  ipAddress    String?
+  userAgent    String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@index([sessionToken])
+  @@map("sessions")
+}
+
+model Profile {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  displayName    String?
+  bio            String?
+  billingCountry String?  @default("IN") // ISO 3166-1 alpha-2 (e.g. "IN", "US", "GB")
+  preferences    Json?    @default("{}")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@map("profiles")
+}
+
+model ToolExecution {
+  id              String          @id @default(cuid())
+  userId          String?
+  user            User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
+  toolSlug        String
+  toolName        String?
+  category        String?
+  status          ExecutionStatus @default(SUCCESS)
+  executionTimeMs Int             @default(0)
+  inputSnippet    String?
+  outputSnippet   String?
+  createdAt       DateTime        @default(now())
+
+  @@index([userId])
+  @@index([toolSlug])
+  @@index([createdAt])
+  @@map("tool_executions")
+}
+
+model SavedTool {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  toolSlug  String
+  toolName  String?
+  createdAt DateTime @default(now())
+
+  @@unique([userId, toolSlug])
+  @@index([userId])
+  @@map("saved_tools")
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String
+  type      NotificationType @default(INFO)
+  isRead    Boolean          @default(false)
+  actionUrl String?
+  createdAt DateTime         @default(now())
+
+  @@index([userId])
+  @@index([isRead])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
+model BlogCategory {
+  id          String     @id @default(cuid())
+  name        String
+  slug        String     @unique
+  description String?
+  createdAt   DateTime   @default(now())
+  posts       BlogPost[]
+
+  @@map("blog_categories")
+}
+
+model BlogPost {
+  id              String        @id @default(cuid())
+  slug            String        @unique
+  title           String
+  excerpt         String
+  content         String
+  coverImage      String?
+  authorName      String        @default("OmniStack Team")
+  authorRole      String        @default("Engineering Team")
+  authorAvatar    String?
+  categoryId      String?
+  categoryRel     BlogCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  categoryName    String        @default("Engineering")
+  tags            String[]      @default([])
+  readTimeMinutes Int           @default(5)
+  status          PostStatus    @default(PUBLISHED)
+  publishedAt     DateTime?     @default(now())
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([slug])
+  @@index([status])
+  @@index([publishedAt])
+  @@map("blog_posts")
+}
+
+model ApiKey {
+  id           String        @id @default(cuid())
+  userId       String
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name         String
+  keyPrefix    String        // e.g. "osk_live_9a8b"
+  keyHash      String        @unique // SHA-256 hash of secret key
+  lastUsedAt   DateTime?
+  expiresAt    DateTime?
+  revokedAt    DateTime?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  usageRecords UsageRecord[]
+
+  @@index([userId])
+  @@index([keyHash])
+  @@index([revokedAt])
+  @@map("api_keys")
+}
+
+model UsageRecord {
+  id              String    @id @default(cuid())
+  userId          String?
+  user            User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  apiKeyId        String?
+  apiKey          ApiKey?   @relation(fields: [apiKeyId], references: [id], onDelete: SetNull)
+  type            String    // "AI_PROMPT_OPTIMIZE", "API_TOOL_EXECUTION", "WEB_TOOL_EXECUTION"
+  toolSlug        String?
+  tokensUsed      Int?      @default(0)
+  inputTokens     Int?      @default(0)
+  outputTokens    Int?      @default(0)
+  executionTimeMs Int?      @default(0)
+  ipAddress       String?
+  createdAt       DateTime  @default(now())
+
+  @@index([userId])
+  @@index([type])
+  @@index([createdAt])
+  @@index([apiKeyId])
+  @@map("usage_records")
+}
+
+model Subscription {
+  id                     String             @id @default(cuid())
+  userId                 String             @unique
+  user                   User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider               String             @default("RAZORPAY")
+  currency               String             @default("INR")
+  amount                 Int?
+  razorpayCustomerId     String?
+  razorpaySubscriptionId String             @unique
+  razorpayPlanId         String
+  status                 SubscriptionStatus @default(CREATED)
+  plan                   UserPlan           @default(PRO)
+  currentPeriodStart     DateTime?
+  currentPeriodEnd       DateTime?
+  chargeAt               DateTime?
+  totalCount             Int?
+  paidCount              Int                @default(0)
+  remainingCount         Int?
+  cancelledAt            DateTime?
+  createdAt              DateTime           @default(now())
+  updatedAt              DateTime           @updatedAt
+
+  @@index([userId])
+  @@index([provider])
+  @@index([currency])
+  @@index([razorpayCustomerId])
+  @@index([razorpaySubscriptionId])
+  @@index([status])
+  @@map("subscriptions")
+}
+
+model WebhookEvent {
+  id          String   @id @default(cuid())
+  provider    String   @default("RAZORPAY")
+  eventId     String
+  eventType   String
+  processedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+
+  @@unique([provider, eventId])
+  @@index([provider])
+  @@index([eventId])
+  @@index([eventType])
+  @@map("webhook_events")
+}
+
+

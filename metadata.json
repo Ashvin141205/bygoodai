@@ -1,0 +1,6 @@
+{
+  "name": "ByGoodAI",
+  "description": "Production-grade multi-tool developer utilities, workflow automation, API testbed, and analytics platform with modular design system and full-stack architecture.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
