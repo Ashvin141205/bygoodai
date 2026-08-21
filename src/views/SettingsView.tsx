@@ -6,6 +6,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { PageContainer } from '../components/layout/PageContainer';
+import { SEOHead } from '../components/seo/SEOHead';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
@@ -149,34 +150,44 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onNavigate, onOpenAu
 
   if (!isAuthenticated && !isLoading) {
     return (
-      <PageContainer
-        title="Workspace Settings"
-        description="Configure account credentials, developer security, and workstation preferences."
-        breadcrumbs={[{ label: 'Settings', current: true }]}
-        onNavigate={onNavigate}
-      >
-        <div className="max-w-md mx-auto my-12 text-center space-y-5 rounded-2xl border border-neutral-200 bg-white p-8 shadow-xs">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-neutral-100 text-neutral-900">
-            <Sliders className="h-7 w-7" />
+      <>
+        <SEOHead
+          title="Workspace Settings | ByGoodAI"
+          description="Configure account credentials, developer security, and workstation preferences."
+          canonicalPath="/settings"
+          robots="noindex,nofollow"
+          isPrivate={true}
+        />
+        <PageContainer
+          title="Workspace Settings"
+          description="Configure account credentials, developer security, and workstation preferences."
+          breadcrumbs={[{ label: 'Settings', current: true }]}
+          onNavigate={onNavigate}
+        >
+          <div className="max-w-md mx-auto my-12 text-center space-y-5 rounded-2xl border border-neutral-200 bg-white p-8 shadow-xs">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-neutral-100 text-neutral-900">
+              <Sliders className="h-7 w-7" />
+            </div>
+            <div className="space-y-2">
+              <h2 className="text-xl font-bold text-neutral-900">Sign in to configure settings</h2>
+              <p className="text-xs text-neutral-500 leading-relaxed">
+                Account settings, API keys, and session security are tied to your authenticated developer workspace.
+              </p>
+            </div>
+            <div className="flex items-center justify-center gap-3 pt-2">
+              <Button variant="outline" size="sm" onClick={() => onNavigate('/')}>
+                Return Home
+              </Button>
+              <Button variant="primary" size="sm" onClick={() => onOpenAuth('login')}>
+                Sign In
+              </Button>
+            </div>
           </div>
-          <div className="space-y-2">
-            <h2 className="text-xl font-bold text-neutral-900">Sign in to configure settings</h2>
-            <p className="text-xs text-neutral-500 leading-relaxed">
-              Account settings, API keys, and session security are tied to your authenticated developer workspace.
-            </p>
-          </div>
-          <div className="flex items-center justify-center gap-3 pt-2">
-            <Button variant="outline" size="sm" onClick={() => onNavigate('/')}>
-              Return Home
-            </Button>
-            <Button variant="primary" size="sm" onClick={() => onOpenAuth('login')}>
-              Sign In
-            </Button>
-          </div>
-        </div>
-      </PageContainer>
+        </PageContainer>
+      </>
     );
   }
+
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -225,12 +236,21 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onNavigate, onOpenAu
   };
 
   return (
-    <PageContainer
-      title="Workspace Settings"
-      description="Configure account security, developer API keys, editor layout, and privacy preferences."
-      breadcrumbs={[{ label: 'Settings', current: true }]}
-      onNavigate={onNavigate}
-    >
+    <>
+      <SEOHead
+        title="Workspace Settings | ByGoodAI"
+        description="Configure account security, developer API keys, editor layout, and privacy preferences."
+        canonicalPath="/settings"
+        robots="noindex,nofollow"
+        isPrivate={true}
+      />
+      <PageContainer
+        title="Workspace Settings"
+        description="Configure account security, developer API keys, editor layout, and privacy preferences."
+        breadcrumbs={[{ label: 'Settings', current: true }]}
+        onNavigate={onNavigate}
+      >
+
       <div className="max-w-4xl mx-auto space-y-8">
         {/* Section 0: Billing & Subscription Overview */}
         <Card id="settings-billing-section">
@@ -729,5 +749,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onNavigate, onOpenAu
         </div>
       )}
     </PageContainer>
+    </>
   );
 };

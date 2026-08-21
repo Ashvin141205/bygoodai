@@ -5,6 +5,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { PageContainer } from '../components/layout/PageContainer';
+import { SEOHead } from '../components/seo/SEOHead';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
@@ -134,32 +135,41 @@ export const BillingView: React.FC<BillingViewProps> = ({ onNavigate, onOpenAuth
 
   if (!isAuthenticated && !isAuthLoading) {
     return (
-      <PageContainer
-        title="Billing & Subscription"
-        description="Manage your active workspace plan, subscription lifecycle, and billing quotas."
-        breadcrumbs={[{ label: 'Billing', current: true }]}
-        onNavigate={onNavigate}
-      >
-        <div className="max-w-md mx-auto my-12 text-center space-y-5 rounded-2xl border border-neutral-200 bg-white p-8 shadow-xs">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-neutral-100 text-neutral-900">
-            <CreditCard className="h-7 w-7" />
+      <>
+        <SEOHead
+          title="Billing & Subscription | ByGoodAI"
+          description="Manage your active workspace plan, subscription lifecycle, and billing quotas."
+          canonicalPath="/billing"
+          robots="noindex,nofollow"
+          isPrivate={true}
+        />
+        <PageContainer
+          title="Billing & Subscription"
+          description="Manage your active workspace plan, subscription lifecycle, and billing quotas."
+          breadcrumbs={[{ label: 'Billing', current: true }]}
+          onNavigate={onNavigate}
+        >
+          <div className="max-w-md mx-auto my-12 text-center space-y-5 rounded-2xl border border-neutral-200 bg-white p-8 shadow-xs">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-neutral-100 text-neutral-900">
+              <CreditCard className="h-7 w-7" />
+            </div>
+            <div className="space-y-2">
+              <h2 className="text-xl font-bold text-neutral-900">Sign in to view billing</h2>
+              <p className="text-xs text-neutral-500 leading-relaxed">
+                Subscriptions and quota allocations are linked to your authenticated developer workspace.
+              </p>
+            </div>
+            <div className="flex items-center justify-center gap-3 pt-2">
+              <Button variant="outline" size="sm" onClick={() => onNavigate('/pricing')}>
+                View Plans
+              </Button>
+              <Button variant="primary" size="sm" onClick={() => onOpenAuth('login')}>
+                Sign In
+              </Button>
+            </div>
           </div>
-          <div className="space-y-2">
-            <h2 className="text-xl font-bold text-neutral-900">Sign in to view billing</h2>
-            <p className="text-xs text-neutral-500 leading-relaxed">
-              Subscriptions and quota allocations are linked to your authenticated developer workspace.
-            </p>
-          </div>
-          <div className="flex items-center justify-center gap-3 pt-2">
-            <Button variant="outline" size="sm" onClick={() => onNavigate('/pricing')}>
-              View Plans
-            </Button>
-            <Button variant="primary" size="sm" onClick={() => onOpenAuth('login')}>
-              Sign In
-            </Button>
-          </div>
-        </div>
-      </PageContainer>
+        </PageContainer>
+      </>
     );
   }
 
@@ -177,12 +187,21 @@ export const BillingView: React.FC<BillingViewProps> = ({ onNavigate, onOpenAuth
       : billingConfig?.plans.free.limits;
 
   return (
-    <PageContainer
-      title="Billing & Subscription"
-      description="Manage your active plan, inspect usage allocations, and manage Razorpay subscriptions."
-      breadcrumbs={[{ label: 'Billing', current: true }]}
-      onNavigate={onNavigate}
-    >
+    <>
+      <SEOHead
+        title="Billing & Subscription | ByGoodAI"
+        description="Manage your active plan, inspect usage allocations, and manage Razorpay subscriptions."
+        canonicalPath="/billing"
+        robots="noindex,nofollow"
+        isPrivate={true}
+      />
+      <PageContainer
+        title="Billing & Subscription"
+        description="Manage your active plan, inspect usage allocations, and manage Razorpay subscriptions."
+        breadcrumbs={[{ label: 'Billing', current: true }]}
+        onNavigate={onNavigate}
+      >
+
       <div className="max-w-4xl mx-auto space-y-8">
         {/* Payment Warning Alert */}
         {isHalted && (
@@ -454,5 +473,6 @@ export const BillingView: React.FC<BillingViewProps> = ({ onNavigate, onOpenAuth
         </Card>
       </div>
     </PageContainer>
+    </>
   );
 };

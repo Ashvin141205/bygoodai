@@ -1,0 +1,20 @@
+[
+  {
+    "source": "https://luckycharmsweep.com",
+    "target": "https://www.luckycharmsweep.com",
+    "status": "301",
+    "condition": null
+  },
+  {
+    "source": "http://luckycharmsweep.com",
+    "target": "https://www.luckycharmsweep.com",
+    "status": "301",
+    "condition": null
+  },
+  {
+    "source": "/<*>",
+    "target": "/index.html",
+    "status": "200",
+    "condition": null
+  }
+]

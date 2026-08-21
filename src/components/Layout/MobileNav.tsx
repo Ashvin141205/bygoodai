@@ -82,8 +82,8 @@ export const MobileNav: React.FC<MobileNavProps> = ({
       <div className="relative ml-auto flex h-full w-full max-w-xs flex-col bg-white p-5 shadow-2xl animate-in slide-in-from-right duration-200">
         <div className="flex items-center justify-between pb-4 border-b border-neutral-100">
           <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-neutral-900 text-white font-bold text-sm">
-              Ω
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-neutral-900 text-sky-400 font-extrabold text-sm">
+              B
             </div>
             <div>
               <span className="font-extrabold text-sm text-neutral-900">{APP_CONFIG.shortName}</span>

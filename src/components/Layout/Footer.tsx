@@ -15,8 +15,8 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           {/* Brand Column */}
           <div className="lg:col-span-2 space-y-4">
             <div className="flex items-center gap-2.5">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-neutral-900 text-white font-bold text-sm shadow-xs">
-                Ω
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-neutral-900 text-sky-400 font-extrabold text-sm shadow-xs">
+                B
               </div>
               <span className="font-bold text-base tracking-tight text-neutral-900">{APP_CONFIG.name}</span>
             </div>

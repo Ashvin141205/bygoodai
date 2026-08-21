@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { PageContainer } from '../components/layout/PageContainer';
+import { SEOHead } from '../components/seo/SEOHead';
 import { MetricCard } from '../components/ui/MetricCard';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
@@ -31,34 +32,44 @@ export const AdminView: React.FC<AdminViewProps> = ({ onNavigate }) => {
 
   if (!isAdmin && !isLoading) {
     return (
-      <PageContainer
-        title="System Admin Telemetry"
-        description="Access restricted to authorized workspace administrators."
-        breadcrumbs={[{ label: 'System Admin', current: true }]}
-        onNavigate={onNavigate}
-      >
-        <div className="max-w-md mx-auto my-12 text-center space-y-5 rounded-2xl border border-neutral-200 bg-white p-8 shadow-xs">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-100 text-rose-700">
-            <ShieldAlert className="h-7 w-7" />
+      <>
+        <SEOHead
+          title="System Admin Telemetry | ByGoodAI"
+          description="Access restricted to authorized workspace administrators."
+          canonicalPath="/admin"
+          robots="noindex,nofollow"
+          isPrivate={true}
+        />
+        <PageContainer
+          title="System Admin Telemetry"
+          description="Access restricted to authorized workspace administrators."
+          breadcrumbs={[{ label: 'System Admin', current: true }]}
+          onNavigate={onNavigate}
+        >
+          <div className="max-w-md mx-auto my-12 text-center space-y-5 rounded-2xl border border-neutral-200 bg-white p-8 shadow-xs">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-100 text-rose-700">
+              <ShieldAlert className="h-7 w-7" />
+            </div>
+            <div className="space-y-2">
+              <h2 className="text-xl font-bold text-neutral-900">Admin Access Required</h2>
+              <p className="text-xs text-neutral-500 leading-relaxed">
+                This telemetry console is restricted to users with the <span className="font-semibold text-neutral-800">ADMIN</span> role.
+              </p>
+            </div>
+            <div className="flex items-center justify-center gap-3 pt-2">
+              <Button variant="outline" size="sm" onClick={() => onNavigate('/')}>
+                Return to Home
+              </Button>
+              <Button variant="primary" size="sm" onClick={() => onNavigate('/dashboard')}>
+                Go to Workstation
+              </Button>
+            </div>
           </div>
-          <div className="space-y-2">
-            <h2 className="text-xl font-bold text-neutral-900">Admin Access Required</h2>
-            <p className="text-xs text-neutral-500 leading-relaxed">
-              This telemetry console is restricted to users with the <span className="font-semibold text-neutral-800">ADMIN</span> role.
-            </p>
-          </div>
-          <div className="flex items-center justify-center gap-3 pt-2">
-            <Button variant="outline" size="sm" onClick={() => onNavigate('/')}>
-              Return to Home
-            </Button>
-            <Button variant="primary" size="sm" onClick={() => onNavigate('/dashboard')}>
-              Go to Workstation
-            </Button>
-          </div>
-        </div>
-      </PageContainer>
+        </PageContainer>
+      </>
     );
   }
+
 
 
   const handleRefresh = () => {
@@ -102,13 +113,21 @@ export const AdminView: React.FC<AdminViewProps> = ({ onNavigate }) => {
   };
 
   return (
+    <>
+      <SEOHead
+        title="System Telemetry & Engine Diagnostics | ByGoodAI"
+        description="Real-time browser engine benchmarks and client sandbox isolation diagnostics."
+        canonicalPath="/admin"
+        robots="noindex,nofollow"
+        isPrivate={true}
+      />
+      <PageContainer
+        title="System Telemetry & Engine Diagnostics"
+        description="Real-time browser engine benchmarks and client sandbox isolation diagnostics."
+        breadcrumbs={[{ label: 'System Admin', current: true }]}
+        onNavigate={onNavigate}
+      >
 
-    <PageContainer
-      title="System Telemetry & Engine Diagnostics"
-      description="Real-time browser engine benchmarks and client sandbox isolation diagnostics."
-      breadcrumbs={[{ label: 'System Admin', current: true }]}
-      onNavigate={onNavigate}
-    >
       <div className="space-y-8">
         {/* Header Title */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-neutral-200/80 pb-5">
@@ -332,5 +351,6 @@ export const AdminView: React.FC<AdminViewProps> = ({ onNavigate }) => {
         </div>
       </div>
     </PageContainer>
+    </>
   );
 };

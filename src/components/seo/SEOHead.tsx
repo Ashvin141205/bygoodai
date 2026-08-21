@@ -1,5 +1,6 @@
 /**
  * ByGoodAI - React Dynamic Head & SEO Component
+ * Dynamic metadata is applied client-side.
  * Automatically injects titles, meta tags, canonicals, social sharing attributes,
  * and JSON-LD structured data into the browser document head.
  */

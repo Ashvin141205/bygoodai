@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+    <Play length="30">http://com.twilio.music.classical.s3.amazonaws.com/ith_brahms-116-4.mp3</Play> 
+    <Say voice="woman" language="en-US">All representatives are currently busy. Please leave a message after the tone, and we will return your call as soon as possible.</Say>
+    <Pause length="5" />
+    <Say voice="woman" language="en-US">You can also find answers to many common questions on our website at luckycharmsweep.com/help.</Say>
+    <Pause length="5" />
+    <Say voice="woman" language="en-US">Please leave your name and contact information, and briefly describe your issue.</Say>
+    <Pause length="5" />
+    <Say voice="woman" language="en-US">Your call will be answered in the order it was received.</Say>
+    <Pause length="5" />
+    <Play length="30">http://com.twilio.music.classical.s3.amazonaws.com/ith_brahms-116-4.mp3</Play>
+    <Redirect>/record-message.xml</Redirect>
+</Response>

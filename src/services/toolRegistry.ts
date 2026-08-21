@@ -158,6 +158,12 @@ export function getToolBySlug(slug: string): ToolDefinition | undefined {
   );
 }
 
+export function getCategoryBySlug(slug: string): ToolCategory | undefined {
+  if (!slug) return undefined;
+  const norm = slug.toLowerCase();
+  return TOOL_CATEGORIES.find((c) => c.slug.toLowerCase() === norm);
+}
+
 export function getToolsByCategory(categorySlug: string): ToolDefinition[] {
   if (!categorySlug || categorySlug === 'all') {
     return getAllTools();

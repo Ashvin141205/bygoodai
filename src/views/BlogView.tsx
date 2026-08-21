@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { PageContainer } from '../components/layout/PageContainer';
+import { SEOHead } from '../components/seo/SEOHead';
 import { BlogCard } from '../components/ui/BlogCard';
 import { Badge } from '../components/ui/Badge';
 import { db } from '../db/client';
@@ -23,12 +24,23 @@ export const BlogView: React.FC<BlogViewProps> = ({ onNavigate }) => {
   const regularPosts = allPosts.slice(1);
 
   return (
-    <PageContainer
-      title="Engineering Blog & Technical Insights"
-      description="Deep dives into client-side architectures, browser crypto primitives, and software ergonomics."
-      breadcrumbs={[{ label: 'Blog', current: true }]}
-      onNavigate={onNavigate}
-    >
+    <>
+      <SEOHead
+        title="Engineering Blog & Technical Guides"
+        description="Deep dives into client-side architectures, browser cryptography primitives, and software ergonomics."
+        canonicalPath="/blog"
+        breadcrumbs={[
+          { name: 'Home', url: '/' },
+          { name: 'Blog', url: '/blog' },
+        ]}
+      />
+      <PageContainer
+        title="Engineering Blog & Technical Insights"
+        description="Deep dives into client-side architectures, browser crypto primitives, and software ergonomics."
+        breadcrumbs={[{ label: 'Blog', current: true }]}
+        onNavigate={onNavigate}
+      >
+
       <div className="space-y-8">
         {/* Header Title */}
         <div className="border-b border-neutral-200/80 pb-5 space-y-1">
@@ -78,5 +90,6 @@ export const BlogView: React.FC<BlogViewProps> = ({ onNavigate }) => {
         </div>
       </div>
     </PageContainer>
+    </>
   );
 };

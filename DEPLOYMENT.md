@@ -4,25 +4,17 @@ This guide provides the complete operational runbook for deploying, configuring,
 
 ---
 
-## Table of Contents
-1. [Prerequisites](#1-prerequisites)
-2. [Environment Variables Reference](#2-environment-variables-reference)
-3. [PostgreSQL Database Setup & Connection Pooling](#3-postgresql-database-setup--connection-pooling)
-4. [Prisma Migrations (Safe Production Flow)](#4-prisma-migrations-safe-production-flow)
-5. [Build Process](#5-build-process)
-6. [Production Start Command](#6-production-start-command)
-7. [Domain & HTTPS Configuration](#7-domain--https-configuration)
-8. [CORS Whitelisting](#8-cors-whitelisting)
-9. [Razorpay Live Mode Configuration](#9-razorpay-live-mode-configuration)
-10. [Razorpay Webhook Configuration](#10-razorpay-webhook-configuration)
-11. [Health & Readiness Probes](#11-health--readiness-probes)
-12. [Rollback Procedure](#12-rollback-procedure)
-13. [Secret Rotation Runbook](#13-secret-rotation-runbook)
-14. [Troubleshooting & Diagnostics](#14-troubleshooting--diagnostics)
+## 1. Platform & Production Domain Status
+
+- **Deployment Platform**: AI Studio container environment (Development/Preview). Target production platform (Google Cloud Run, AWS ECS, Render, Railway, or Kubernetes) is not configured yet and can be deployed following this runbook.
+- **Production Domain**: The final production domain has not been purchased or finalized yet.
+  - **Important**: Do NOT hardcode `bygoodai.com` or `https://bygoodai.com`.
+  - In production (`NODE_ENV=production`), `server/config/envValidation.ts` verifies `APP_URL` and `FRONTEND_URL`, strictly rejecting placeholder and local origins (such as `localhost`, `127.0.0.1`, `bygoodai.example`, `example.com`).
+  - Configure `APP_URL`, `FRONTEND_URL`, and `CORS_ORIGIN` with your actual purchased domain with `https://`.
 
 ---
 
-## 1. Prerequisites
+## 2. Prerequisites
 
 Before deploying to production, ensure the target environment provides:
 - **Node.js**: v18.0.0 or higher (Node 20+ recommended)
@@ -34,7 +26,7 @@ Before deploying to production, ensure the target environment provides:
 
 ---
 
-## 2. Environment Variables Reference
+## 3. Environment Variables Reference
 
 Configure environment variables in your hosting provider's secrets manager (e.g. Google Secret Manager, AWS Secrets Manager, Doppler, or platform dashboard).
 
@@ -44,9 +36,10 @@ Configure environment variables in your hosting provider's secrets manager (e.g.
 | `DATABASE_URL` | String | Yes | `postgresql://<user>:<pwd>@<host>:5432/<db>?sslmode=require&connection_limit=20` |
 | `AUTH_SECRET` | String | Yes | 32+ character random string for session token cryptography |
 | `GEMINI_API_KEY` | String | Yes | Google Gemini API key for server-side prompt engineering |
-| `APP_URL` / `BACKEND_URL` | String | Yes | `https://your-domain.com` (Public HTTPS URL of your deployment) |
-| `FRONTEND_URL` | String | Yes | `https://your-domain.com` (Allowed CORS origin for browser access) |
-| `CORS_ORIGIN` | String | Optional | Comma-separated list of allowed origins (e.g. `https://your-domain.com`) |
+| `APP_URL` / `BACKEND_URL` | String | Yes | `https://your-purchased-domain.com` (Public HTTPS URL of your deployment) |
+| `FRONTEND_URL` | String | Yes | `https://your-purchased-domain.com` (Allowed CORS origin for browser access) |
+| `CORS_ORIGIN` | String | Optional | Comma-separated list of allowed origins (e.g. `https://your-purchased-domain.com`) |
+| `SUPPORT_EMAIL` | String | Optional | Public contact/support email address |
 | `RAZORPAY_KEY_ID` | String | Yes | Live Razorpay Key ID (`rzp_live_...`) |
 | `RAZORPAY_KEY_SECRET` | String | Yes | Live Razorpay Key Secret (Server-only secret) |
 | `RAZORPAY_WEBHOOK_SECRET` | String | Yes | Webhook signing secret configured in Razorpay Dashboard |
@@ -59,7 +52,7 @@ Configure environment variables in your hosting provider's secrets manager (e.g.
 
 ---
 
-## 3. PostgreSQL Database Setup & Connection Pooling
+## 4. PostgreSQL Database Setup & Connection Pooling
 
 1. **Connection String Format**:
    ```
@@ -73,7 +66,7 @@ Configure environment variables in your hosting provider's secrets manager (e.g.
 
 ---
 
-## 4. Prisma Migrations (Safe Production Flow)
+## 5. Prisma Migrations (Safe Production Flow)
 
 ### ⚠️ Critical Rule: NEVER run `prisma migrate reset` in production!
 
@@ -89,7 +82,7 @@ npx prisma migrate deploy
 
 ---
 
-## 5. Build Process
+## 6. Build Process
 
 The project uses a unified production build script:
 - Compiles the React + Vite frontend into static assets in `dist/`
@@ -101,7 +94,7 @@ npm run build
 
 ---
 
-## 6. Production Start Command
+## 7. Production Start Command
 
 Start the bundled production server:
 
@@ -114,7 +107,7 @@ The server binds to `0.0.0.0:3000` and serves both the API endpoints under `/api
 
 ---
 
-## 7. Domain & HTTPS Configuration
+## 8. Domain & HTTPS Configuration
 
 1. **Reverse Proxy / Load Balancer**:
    - Configure DNS (A/AAAA/CNAME records) pointing to your load balancer or Cloud Run service.
@@ -124,7 +117,7 @@ The server binds to `0.0.0.0:3000` and serves both the API endpoints under `/api
 
 ---
 
-## 8. CORS Whitelisting
+## 9. CORS Whitelisting
 
 Production requests require strict origin validation:
 - When `FRONTEND_URL` or `CORS_ORIGIN` is specified, only matching origins are allowed access to credentials-carrying requests.
@@ -132,7 +125,7 @@ Production requests require strict origin validation:
 
 ---
 
-## 9. Razorpay Live Mode Configuration
+## 10. Razorpay Live Mode Configuration
 
 To transition from Test Mode to Live Mode:
 1. Complete KYC and Bank Account verification in the [Razorpay Dashboard](https://dashboard.razorpay.com).
@@ -145,13 +138,13 @@ To transition from Test Mode to Live Mode:
 
 ---
 
-## 10. Razorpay Webhook Configuration
+## 11. Razorpay Webhook Configuration
 
 After your public HTTPS domain is active:
 1. Navigate to **Razorpay Dashboard > Settings > Webhooks > Add New Webhook**.
 2. **Webhook URL**:
    ```
-   https://YOUR-PRODUCTION-DOMAIN/api/billing/razorpay/webhook
+   https://YOUR-PURCHASED-DOMAIN/api/billing/razorpay/webhook
    ```
 3. **Secret**: Enter a high-entropy secret string and copy it to `RAZORPAY_WEBHOOK_SECRET`.
 4. **Active Events to Subscribe**:
@@ -167,13 +160,13 @@ After your public HTTPS domain is active:
 
 ---
 
-## 11. Health & Readiness Probes
+## 12. Health & Readiness Probes
 
 The application provides two dedicated diagnostic endpoints for container orchestrators:
 
 ### 1. Health Probe (`GET /api/health`)
 - Used for basic liveness checks.
-- Returns `200 OK` with system uptime and process memory metrics.
+- Returns `200 OK` with system uptime, memory metrics, and database status.
 
 ### 2. Readiness Probe (`GET /api/ready`)
 - Used by container orchestrators (e.g. Cloud Run, Kubernetes readiness gates) to determine if the container can receive traffic.
@@ -182,7 +175,7 @@ The application provides two dedicated diagnostic endpoints for container orches
 
 ---
 
-## 12. Rollback Procedure
+## 13. Rollback Procedure
 
 If a deployment incident occurs:
 1. **Application Rollback**:
@@ -194,7 +187,7 @@ If a deployment incident occurs:
 
 ---
 
-## 13. Secret Rotation Runbook
+## 14. Secret Rotation Runbook
 
 1. **AUTH_SECRET**:
    - Updating `AUTH_SECRET` immediately invalidates active sessions, requiring users to log in again.
@@ -207,7 +200,7 @@ If a deployment incident occurs:
 
 ---
 
-## 14. Troubleshooting & Diagnostics
+## 15. Troubleshooting & Diagnostics
 
 | Symptom | Probable Cause | Corrective Action |
 | :--- | :--- | :--- |

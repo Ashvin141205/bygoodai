@@ -1,0 +1,7 @@
+# AWS Amplify Redirects
+# Redirect non-www to www
+https://luckycharmsweep.com/* https://www.luckycharmsweep.com/:splat 301!
+http://luckycharmsweep.com/* https://www.luckycharmsweep.com/:splat 301!
+
+# SPA fallback - all routes should serve index.html
+/*    /index.html   200

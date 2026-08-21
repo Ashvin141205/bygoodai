@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { PageContainer } from '../components/layout/PageContainer';
+import { SEOHead } from '../components/seo/SEOHead';
 import { ToolCard } from '../components/tools/ToolCard';
 import { ActivityCard } from '../components/ui/ActivityCard';
 import { MetricCard } from '../components/ui/MetricCard';
@@ -101,12 +102,21 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ initialTab, onNavi
   };
 
   return (
-    <PageContainer
-      title="Developer Workstation & Activity Dashboard"
-      description="Inspect execution logs, manage bookmarked developer utilities, view API usage quotas, and configure preferences."
-      breadcrumbs={[{ label: 'Workstation Dashboard', current: true }]}
-      onNavigate={onNavigate}
-    >
+    <>
+      <SEOHead
+        title="Developer Workstation Dashboard | ByGoodAI"
+        description="Inspect execution logs, manage bookmarked developer utilities, and view API usage quotas."
+        canonicalPath="/dashboard"
+        robots="noindex,nofollow"
+        isPrivate={true}
+      />
+      <PageContainer
+        title="Developer Workstation & Activity Dashboard"
+        description="Inspect execution logs, manage bookmarked developer utilities, view API usage quotas, and configure preferences."
+        breadcrumbs={[{ label: 'Workstation Dashboard', current: true }]}
+        onNavigate={onNavigate}
+      >
+
       <div className="space-y-8">
         {/* User Workspace Status Banner */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl border border-neutral-200/90 bg-white p-6 shadow-xs">
@@ -477,5 +487,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ initialTab, onNavi
         )}
       </div>
     </PageContainer>
+    </>
   );
 };

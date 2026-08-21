@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+    <Say voice="woman" language="en-US">Please leave your message after the tone. Press any key to end your recording.</Say>
+    <Record maxLength="120"  
+            finishOnKey="#"  
+            timeout="10"   
+            playBeep="true"
+            trim="trim-silence"
+            transcribe="false" 
+             >
+    </Record>
+    <Say voice="woman" language="en-US">Thank you. Your message has been recorded.</Say>
+    <Hangup/>
+</Response>

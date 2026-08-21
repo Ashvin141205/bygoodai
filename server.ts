@@ -17,6 +17,7 @@ import { standardLimiter } from './server/middleware/rateLimiter';
 import { csrfProtection } from './server/middleware/csrfProtection';
 import { errorHandler } from './server/middleware/errorHandler';
 import { prisma } from './server/lib/prisma';
+import { validateEnvOnStartup } from './server/config/envValidation';
 
 dotenv.config();
 
@@ -56,6 +57,9 @@ function getResolvedAllowedOrigins(): string[] {
 }
 
 async function bootstrap() {
+  // Validate runtime environment before accepting traffic
+  validateEnvOnStartup();
+
   const app = express();
 
   // Trust proxy for reverse proxy in Cloud Run, Kubernetes, Nginx, or Load Balancers
@@ -97,8 +101,17 @@ async function bootstrap() {
               imgSrc: ["'self'", 'data:', 'blob:', 'https:', 'http:'],
               styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
               fontSrc: ["'self'", 'data:', 'https://fonts.gstatic.com'],
+              workerSrc: ["'self'", 'blob:'],
+              manifestSrc: ["'self'"],
               objectSrc: ["'none'"],
             },
+          }
+        : false,
+      hsts: isProduction
+        ? {
+            maxAge: 31536000,
+            includeSubDomains: true,
+            preload: true,
           }
         : false,
       crossOriginEmbedderPolicy: false,
@@ -107,6 +120,12 @@ async function bootstrap() {
       xContentTypeOptions: true,
     })
   );
+
+  // Additional security headers: Permissions-Policy
+  app.use((_req, res, next) => {
+    res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+    next();
+  });
 
   // 2. Production CORS Configuration
   const allowedOrigins = getResolvedAllowedOrigins();
@@ -169,8 +188,24 @@ async function bootstrap() {
     console.log('[ByGoodAI Server] Vite development middleware mounted.');
   } else {
     const distPath = path.join(process.cwd(), 'dist');
-    app.use(express.static(distPath));
+    app.use(
+      express.static(distPath, {
+        setHeaders: (res, filePath) => {
+          const basename = path.basename(filePath);
+          if (basename === 'sw.js' || basename === 'index.html') {
+            res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+          } else if (basename === 'manifest.webmanifest') {
+            res.setHeader('Cache-Control', 'public, max-age=3600');
+          } else if (filePath.includes(`${path.sep}assets${path.sep}`)) {
+            res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+          } else {
+            res.setHeader('Cache-Control', 'public, max-age=86400');
+          }
+        },
+      })
+    );
     app.get('*', (_req, res) => {
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
       res.sendFile(path.join(distPath, 'index.html'));
     });
     console.log('[ByGoodAI Server] Production static assets serving from dist/.');

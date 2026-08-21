@@ -10,8 +10,8 @@ export const APP_CONFIG = {
   description: 'An open, high-performance platform featuring developer tools, data converters, security encoders, AI prompt optimizers, and cloud analytics.',
   version: '2.4.0',
   author: 'ByGoodAI Core Engineering Team',
-  url: typeof window !== 'undefined' ? window.location.origin : (import.meta.env.VITE_APP_URL || 'https://bygoodai.example'),
-  contactEmail: 'support@bygoodai.example',
+  url: typeof window !== 'undefined' ? window.location.origin : ((typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_APP_URL) || (typeof process !== 'undefined' ? process.env?.APP_URL : '') || ''),
+  contactEmail: ((typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_SUPPORT_EMAIL) || (typeof process !== 'undefined' ? process.env?.SUPPORT_EMAIL : '') || ''),
 
   // Feature Flags
   features: {
@@ -35,7 +35,7 @@ export const APP_CONFIG = {
   // Navigation Links
   navigation: [
     { label: 'Explore Tools', href: '/tools' },
-    { label: 'Categories', href: '/categories' },
+    { label: 'Categories', href: '/tools' },
     { label: 'Workstation', href: '/dashboard' },
     { label: 'API & Docs', href: '/docs' },
     { label: 'Blog', href: '/blog' },

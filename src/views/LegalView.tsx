@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { PageContainer } from '../components/layout/PageContainer';
+import { SEOHead } from '../components/seo/SEOHead';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
@@ -177,11 +178,17 @@ export const LegalView: React.FC<LegalViewProps> = ({ type, onNavigate }) => {
             </form>
           )}
 
-          <div className="p-4 rounded-xl bg-neutral-50 border border-neutral-200 text-xs font-mono text-neutral-600 space-y-1 pt-4">
-            <p><strong>Direct Inquiries:</strong></p>
-            <p>engineering: core@bygoodai.example</p>
-            <p>enterprise: enterprise@bygoodai.example</p>
-          </div>
+          {APP_CONFIG.contactEmail ? (
+            <div className="p-4 rounded-xl bg-neutral-50 border border-neutral-200 text-xs font-mono text-neutral-600 space-y-1 pt-4">
+              <p><strong>Direct Inquiries:</strong></p>
+              <p>support: {APP_CONFIG.contactEmail}</p>
+            </div>
+          ) : (
+            <div className="p-4 rounded-xl bg-neutral-50 border border-neutral-200 text-xs text-neutral-600 space-y-1 pt-4">
+              <p className="font-semibold text-neutral-900">Direct Inquiries:</p>
+              <p>Please submit inquiries directly via the secure form above. Our engineering team reviews all incoming requests.</p>
+            </div>
+          )}
         </div>
       ),
     },
@@ -204,23 +211,35 @@ export const LegalView: React.FC<LegalViewProps> = ({ type, onNavigate }) => {
   const current = configs[type] || configs.about;
 
   return (
-    <PageContainer
-      title={current.title}
-      description={current.desc}
-      breadcrumbs={current.breadcrumbs}
-      onNavigate={onNavigate}
-    >
-      <div className="max-w-3xl mx-auto space-y-6">
-        <div className="border-b border-neutral-200/80 pb-4">
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-neutral-900">
-            {current.title}
-          </h1>
-          <p className="text-xs sm:text-sm text-neutral-500 mt-1">{current.desc}</p>
+    <>
+      <SEOHead
+        title={current.title}
+        description={current.desc}
+        canonicalPath={`/${type}`}
+        breadcrumbs={[
+          { name: 'Home', url: '/' },
+          { name: current.title, url: `/${type}` },
+        ]}
+      />
+      <PageContainer
+        title={current.title}
+        description={current.desc}
+        breadcrumbs={current.breadcrumbs}
+        onNavigate={onNavigate}
+      >
+        <div className="max-w-3xl mx-auto space-y-6">
+          <div className="border-b border-neutral-200/80 pb-4">
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-neutral-900">
+              {current.title}
+            </h1>
+            <p className="text-xs sm:text-sm text-neutral-500 mt-1">{current.desc}</p>
+          </div>
+          <Card>
+            <CardContent className="p-6 sm:p-8">{current.content}</CardContent>
+          </Card>
         </div>
-        <Card>
-          <CardContent className="p-6 sm:p-8">{current.content}</CardContent>
-        </Card>
-      </div>
-    </PageContainer>
+      </PageContainer>
+    </>
   );
 };
+

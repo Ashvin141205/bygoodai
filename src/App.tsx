@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, lazy, Suspense } from 'react';
 import { ToastProvider } from './components/ui/Toast';
 import { AuthProvider } from './context/AuthContext';
 import { ErrorBoundary } from './components/layout/ErrorBoundary';
@@ -12,22 +12,36 @@ import { Footer } from './components/layout/Footer';
 import { MobileNav } from './components/layout/MobileNav';
 import { QuickSearchModal } from './components/navigation/QuickSearchModal';
 import { AuthModal } from './components/navigation/AuthModal';
+import { PwaInstallPrompt } from './components/ui/PwaInstallPrompt';
 
+// Eagerly loaded critical first-visit views for instantaneous LCP
 import { HomeView } from './views/HomeView';
 import { ToolsDirectoryView } from './views/ToolsDirectoryView';
 import { ToolWorkstationView } from './views/ToolWorkstationView';
-import { DashboardView } from './views/DashboardView';
 import { PricingView } from './views/PricingView';
-import { BillingView } from './views/BillingView';
-import { DocsView } from './views/DocsView';
-import { BlogView } from './views/BlogView';
-import { BlogPostView } from './views/BlogPostView';
-import { AdminView } from './views/AdminView';
-import { ProfileView } from './views/ProfileView';
-import { SettingsView } from './views/SettingsView';
-import { LegalView } from './views/LegalView';
 import { NotFoundView } from './views/NotFoundView';
+
+// Lazily loaded secondary views to reduce initial bundle size
+const DashboardView = lazy(() => import('./views/DashboardView').then(m => ({ default: m.DashboardView })));
+const BillingView = lazy(() => import('./views/BillingView').then(m => ({ default: m.BillingView })));
+const DocsView = lazy(() => import('./views/DocsView').then(m => ({ default: m.DocsView })));
+const BlogView = lazy(() => import('./views/BlogView').then(m => ({ default: m.BlogView })));
+const BlogPostView = lazy(() => import('./views/BlogPostView').then(m => ({ default: m.BlogPostView })));
+const AdminView = lazy(() => import('./views/AdminView').then(m => ({ default: m.AdminView })));
+const ProfileView = lazy(() => import('./views/ProfileView').then(m => ({ default: m.ProfileView })));
+const SettingsView = lazy(() => import('./views/SettingsView').then(m => ({ default: m.SettingsView })));
+const LegalView = lazy(() => import('./views/LegalView').then(m => ({ default: m.LegalView })));
+
 import { db } from './db/client';
+
+const ViewLoadingFallback: React.FC = () => (
+  <div className="flex-1 flex items-center justify-center min-h-[50vh] p-8">
+    <div className="flex flex-col items-center gap-3 text-neutral-400">
+      <div className="h-6 w-6 animate-spin rounded-full border-2 border-neutral-300 border-t-sky-500" />
+      <span className="text-xs font-mono">Loading view...</span>
+    </div>
+  </div>
+);
 
 export default function App() {
   const [currentPath, setCurrentPath] = useState<string>(() => {
@@ -108,12 +122,31 @@ export default function App() {
       );
     }
 
-    // 2. Tools Directory Root
-    if (cleanPath === '/tools') {
+    // 2. Tools Directory Root & Category Hubs
+    if (cleanPath === '/tools' || cleanPath === '/categories') {
       return (
         <ToolsDirectoryView
           initialCategory="all"
           onNavigate={handleNavigate}
+        />
+      );
+    }
+
+    if (cleanPath.startsWith('/categories/')) {
+      const catParam = cleanPath.replace('/categories/', '').split('/')[0];
+      const category = db.getCategoryBySlug(catParam);
+      if (category || catParam === 'all') {
+        return (
+          <ToolsDirectoryView
+            initialCategory={catParam}
+            onNavigate={handleNavigate}
+          />
+        );
+      }
+      return (
+        <NotFoundView
+          onNavigate={handleNavigate}
+          onOpenSearch={() => setIsSearchOpen(true)}
         />
       );
     }
@@ -297,10 +330,15 @@ export default function App() {
             />
 
             <div className="flex-1 flex flex-col">
-              {renderView}
+              <Suspense fallback={<ViewLoadingFallback />}>
+                {renderView}
+              </Suspense>
             </div>
 
             <Footer onNavigate={handleNavigate} />
+
+            {/* Optional PWA Standalone App Install Banner */}
+            <PwaInstallPrompt />
 
             {/* Global Navigation & Command Modals */}
             <QuickSearchModal

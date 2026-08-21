@@ -1,5 +1,7 @@
 import React from 'react';
 import { PageContainer } from '../components/layout/PageContainer';
+import { SEOHead } from '../components/seo/SEOHead';
+import { createArticleSchema } from '../lib/seo';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { Avatar } from '../components/ui/Avatar';
@@ -23,18 +25,26 @@ export const BlogPostView: React.FC<BlogPostViewProps> = ({ postSlug, slug, onNa
 
   if (!post) {
     return (
-      <PageContainer
-        title="Article Not Found"
-        description="The requested blog post could not be found."
-        onNavigate={onNavigate}
-      >
-        <div className="text-center py-16 space-y-4">
-          <h2 className="text-xl font-bold text-neutral-900">Article Not Found</h2>
-          <Button variant="primary" onClick={() => onNavigate('/blog')}>
-            Return to Blog Index
-          </Button>
-        </div>
-      </PageContainer>
+      <>
+        <SEOHead
+          title="Article Not Found | ByGoodAI"
+          description="The requested blog article could not be found."
+          robots="noindex,nofollow"
+          isPrivate={true}
+        />
+        <PageContainer
+          title="Article Not Found"
+          description="The requested blog post could not be found."
+          onNavigate={onNavigate}
+        >
+          <div className="text-center py-16 space-y-4">
+            <h2 className="text-xl font-bold text-neutral-900">Article Not Found</h2>
+            <Button variant="primary" onClick={() => onNavigate('/blog')}>
+              Return to Blog Index
+            </Button>
+          </div>
+        </PageContainer>
+      </>
     );
   }
 
@@ -46,16 +56,33 @@ export const BlogPostView: React.FC<BlogPostViewProps> = ({ postSlug, slug, onNa
   };
 
   return (
-    <PageContainer
-      title={`${post.title} — ByGoodAI Engineering`}
-      description={post.summary}
-      breadcrumbs={[
-        { label: 'Blog', onClick: () => onNavigate('/blog') },
-        { label: post.category, onClick: () => onNavigate('/blog') },
-        { label: post.title, current: true },
-      ]}
-      onNavigate={onNavigate}
-    >
+    <>
+      <SEOHead
+        title={`${post.title} — ByGoodAI Engineering`}
+        description={post.summary}
+        canonicalPath={`/blog/${post.slug}`}
+        ogType="article"
+        publishedTime={post.publishedAt}
+        authorName={post.author.name}
+        tags={post.tags}
+        jsonLd={createArticleSchema(post)}
+        breadcrumbs={[
+          { name: 'Home', url: '/' },
+          { name: 'Blog', url: '/blog' },
+          { name: post.title, url: `/blog/${post.slug}` },
+        ]}
+      />
+      <PageContainer
+        title={`${post.title} — ByGoodAI Engineering`}
+        description={post.summary}
+        breadcrumbs={[
+          { label: 'Blog', onClick: () => onNavigate('/blog') },
+          { label: post.category, onClick: () => onNavigate('/blog') },
+          { label: post.title, current: true },
+        ]}
+        onNavigate={onNavigate}
+      >
+
       <article className="max-w-3xl mx-auto space-y-8">
         {/* Top Back Navigation */}
         <Button
@@ -144,5 +171,6 @@ export const BlogPostView: React.FC<BlogPostViewProps> = ({ postSlug, slug, onNa
         </div>
       </article>
     </PageContainer>
+    </>
   );
 };

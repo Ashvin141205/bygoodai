@@ -6,6 +6,7 @@
 
 import React, { useState } from 'react';
 import { PageContainer } from '../components/layout/PageContainer';
+import { SEOHead } from '../components/seo/SEOHead';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
@@ -41,34 +42,44 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onNavigate, onOpenAuth
   // If not authenticated, render pleasant sign-in prompt
   if (!isAuthenticated && !isLoading) {
     return (
-      <PageContainer
-        title="Account Profile"
-        description="View and manage your developer profile, tier credentials, and workspace preferences."
-        breadcrumbs={[{ label: 'Profile', current: true }]}
-        onNavigate={onNavigate}
-      >
-        <div className="max-w-md mx-auto my-12 text-center space-y-5 rounded-2xl border border-neutral-200 bg-white p-8 shadow-xs">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-neutral-100 text-neutral-900">
-            <UserIcon className="h-7 w-7" />
+      <>
+        <SEOHead
+          title="Account Profile | ByGoodAI"
+          description="View and manage your developer profile, tier credentials, and workspace preferences."
+          canonicalPath="/profile"
+          robots="noindex,nofollow"
+          isPrivate={true}
+        />
+        <PageContainer
+          title="Account Profile"
+          description="View and manage your developer profile, tier credentials, and workspace preferences."
+          breadcrumbs={[{ label: 'Profile', current: true }]}
+          onNavigate={onNavigate}
+        >
+          <div className="max-w-md mx-auto my-12 text-center space-y-5 rounded-2xl border border-neutral-200 bg-white p-8 shadow-xs">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-neutral-100 text-neutral-900">
+              <UserIcon className="h-7 w-7" />
+            </div>
+            <div className="space-y-2">
+              <h2 className="text-xl font-bold text-neutral-900">Authentication Required</h2>
+              <p className="text-xs text-neutral-500 leading-relaxed">
+                Please sign in to access your personal profile, cloud-synchronized execution logs, and account settings.
+              </p>
+            </div>
+            <div className="flex items-center justify-center gap-3 pt-2">
+              <Button variant="outline" size="sm" onClick={() => onNavigate('/')}>
+                Return Home
+              </Button>
+              <Button variant="primary" size="sm" onClick={() => onOpenAuth('login')}>
+                Sign In
+              </Button>
+            </div>
           </div>
-          <div className="space-y-2">
-            <h2 className="text-xl font-bold text-neutral-900">Authentication Required</h2>
-            <p className="text-xs text-neutral-500 leading-relaxed">
-              Please sign in to access your personal profile, cloud-synchronized execution logs, and account settings.
-            </p>
-          </div>
-          <div className="flex items-center justify-center gap-3 pt-2">
-            <Button variant="outline" size="sm" onClick={() => onNavigate('/')}>
-              Return Home
-            </Button>
-            <Button variant="primary" size="sm" onClick={() => onOpenAuth('login')}>
-              Sign In
-            </Button>
-          </div>
-        </div>
-      </PageContainer>
+        </PageContainer>
+      </>
     );
   }
+
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -94,12 +105,21 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onNavigate, onOpenAuth
     : 'Recently';
 
   return (
-    <PageContainer
-      title="Developer Profile"
-      description="Manage your identity, view subscription entitlements, and configure account details."
-      breadcrumbs={[{ label: 'Profile', current: true }]}
-      onNavigate={onNavigate}
-    >
+    <>
+      <SEOHead
+        title="Developer Profile | ByGoodAI"
+        description="Manage your identity, view subscription entitlements, and configure account details."
+        canonicalPath="/profile"
+        robots="noindex,nofollow"
+        isPrivate={true}
+      />
+      <PageContainer
+        title="Developer Profile"
+        description="Manage your identity, view subscription entitlements, and configure account details."
+        breadcrumbs={[{ label: 'Profile', current: true }]}
+        onNavigate={onNavigate}
+      >
+
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Profile Header Card */}
         <Card>
@@ -258,5 +278,6 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onNavigate, onOpenAuth
         </div>
       </div>
     </PageContainer>
+    </>
   );
 };

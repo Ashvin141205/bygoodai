@@ -1,7 +1,6 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Breadcrumbs } from './Breadcrumbs';
 import { BreadcrumbItem } from '../../types';
-import { generateSeoMetadata } from '../../lib/seo';
 
 export interface PageContainerProps {
   title?: string;
@@ -14,21 +13,12 @@ export interface PageContainerProps {
 }
 
 export const PageContainer: React.FC<PageContainerProps> = ({
-  title,
-  description,
   breadcrumbs,
   onNavigate,
   children,
   maxWidth = '7xl',
   className = '',
 }) => {
-  useEffect(() => {
-    if (title) {
-      const meta = generateSeoMetadata({ title, description });
-      document.title = meta.title;
-    }
-  }, [title, description]);
-
   const maxWidths = {
     sm: 'max-w-screen-sm',
     md: 'max-w-screen-md',
@@ -48,3 +38,4 @@ export const PageContainer: React.FC<PageContainerProps> = ({
     </main>
   );
 };
+

@@ -1,5 +1,7 @@
 /**
  * ByGoodAI Platform - Comprehensive SEO & Metadata Engine
+ * Dynamic metadata is applied client-side.
+ * 
  * Manages dynamic document metadata, canonical URL normalization,
  * Open Graph / Twitter Cards, XSS-safe JSON-LD schemas, and visible breadcrumbs.
  */
@@ -41,8 +43,12 @@ export interface SEOMetadata {
   tags?: string[];
 }
 
+export const DEFAULT_SEO_TITLE = 'ByGoodAI — AI Tools, Developer Tools & APIs';
+export const DEFAULT_SEO_DESCRIPTION = 'ByGoodAI provides fast, client-side developer utilities, data converters, security encoders, AI prompt optimizers, and developer APIs.';
+
 /**
- * Resolves absolute canonical URL using configured APP_URL or browser origin
+ * Resolves absolute canonical URL using configured APP_URL or browser origin.
+ * Never emits fake fallback domains in production.
  */
 export function getBaseUrl(): string {
   if (typeof window !== 'undefined' && window.location && window.location.origin) {
@@ -53,29 +59,29 @@ export function getBaseUrl(): string {
     (typeof process !== 'undefined' && (process.env?.APP_URL || process.env?.FRONTEND_URL || process.env?.BACKEND_URL)) ||
     (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_APP_URL);
 
-  if (envUrl && typeof envUrl === 'string' && envUrl.trim() && !envUrl.includes('localhost')) {
+  if (envUrl && typeof envUrl === 'string' && envUrl.trim() && !envUrl.includes('localhost') && !envUrl.includes('bygoodai.example')) {
     return envUrl.trim().replace(/\/+$/, '');
   }
 
-  return (APP_CONFIG.url || 'https://bygoodai.example').replace(/\/+$/, '');
+  return '';
 }
 
 /**
- * Builds normalized, absolute HTTPS canonical URL
+ * Builds normalized, canonical URL (strips query parameters, hash fragments, trailing slash for sub-paths)
  */
 export function getCanonicalUrl(path: string = '/'): string {
   const base = getBaseUrl();
   const cleanPath = (path || '/').split('?')[0].split('#')[0];
   const normalizedPath = cleanPath.startsWith('/') ? cleanPath : `/${cleanPath}`;
 
-  // Root case
+  // Root path case
   if (normalizedPath === '/' || normalizedPath === '') {
-    return `${base}/`;
+    return base ? `${base}/` : '/';
   }
 
-  // Remove trailing slash for sub-paths for strict canonical consistency
+  // Sub-path: remove trailing slash for strict canonical consistency
   const trimmed = normalizedPath.replace(/\/+$/, '');
-  return `${base}${trimmed}`;
+  return base ? `${base}${trimmed}` : trimmed;
 }
 
 /**
@@ -102,10 +108,9 @@ export function createOrganizationSchema(): Record<string, any> {
     '@context': 'https://schema.org',
     '@type': 'Organization',
     name: 'ByGoodAI',
-    url: `${base}/`,
-    logo: `${base}/og-image.png`,
+    url: base ? `${base}/` : '/',
+    logo: base ? `${base}/og-image.png` : '/og-image.png',
     description: 'High-performance client-first developer utilities, data converters, security encoders, and AI prompt engineering tools.',
-    sameAs: [],
   };
 }
 
@@ -115,16 +120,16 @@ export function createWebSiteSchema(): Record<string, any> {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
     name: 'ByGoodAI',
-    url: `${base}/`,
-    description: 'ByGoodAI — AI Tools, Developer Tools & APIs. High-performance, client-side developer utilities with zero telemetry leaks.',
+    url: base ? `${base}/` : '/',
+    description: DEFAULT_SEO_DESCRIPTION,
     publisher: {
       '@type': 'Organization',
       name: 'ByGoodAI',
-      url: `${base}/`,
+      url: base ? `${base}/` : '/',
     },
     potentialAction: {
       '@type': 'SearchAction',
-      target: `${base}/tools?q={search_term_string}`,
+      target: base ? `${base}/tools?q={search_term_string}` : '/tools?q={search_term_string}',
       'query-input': 'required name=search_term_string',
     },
   };
@@ -132,35 +137,29 @@ export function createWebSiteSchema(): Record<string, any> {
 
 export function createToolSchema(tool: ToolDefinition | ToolItem): Record<string, any> {
   const base = getBaseUrl();
-  const toolUrl = `${base}/tools/${tool.slug}`;
+  const toolUrl = base ? `${base}/tools/${tool.category}/${tool.slug}` : `/tools/${tool.category}/${tool.slug}`;
 
   return {
     '@context': 'https://schema.org',
     '@type': 'WebApplication',
     name: `${tool.name} — ByGoodAI`,
     applicationCategory: 'DeveloperApplication',
-    operatingSystem: 'Any (Web Browser)',
-    browserRequirements: 'Requires JavaScript. Requires HTML5.',
+    operatingSystem: 'Any (Modern Web Browser)',
+    browserRequirements: 'Requires JavaScript and HTML5 support.',
     description: tool.description,
     url: toolUrl,
-    offers: {
-      '@type': 'Offer',
-      price: '0',
-      priceCurrency: 'USD',
-      availability: 'https://schema.org/InStock',
-    },
     featureList: (tool as any).tags ? (tool as any).tags.join(', ') : 'Online Developer Utility',
     publisher: {
       '@type': 'Organization',
       name: 'ByGoodAI',
-      url: `${base}/`,
+      url: base ? `${base}/` : '/',
     },
   };
 }
 
 export function createArticleSchema(post: BlogPost): Record<string, any> {
   const base = getBaseUrl();
-  const articleUrl = `${base}/blog/${post.slug}`;
+  const articleUrl = base ? `${base}/blog/${post.slug}` : `/blog/${post.slug}`;
 
   return {
     '@context': 'https://schema.org',
@@ -168,21 +167,20 @@ export function createArticleSchema(post: BlogPost): Record<string, any> {
     headline: post.title,
     description: post.summary,
     url: articleUrl,
-    image: (post as any).coverImage || `${base}/og-image.png`,
+    image: (post as any).coverImage || (base ? `${base}/og-image.png` : '/og-image.png'),
     datePublished: post.publishedAt,
     dateModified: (post as any).updatedAt || post.publishedAt,
     author: {
       '@type': 'Person',
-      name: post.author?.name || 'ByGoodAI Engineering',
-      jobTitle: post.author?.role || 'Engineering Team',
+      name: post.author?.name || 'ByGoodAI Engineering Team',
     },
     publisher: {
       '@type': 'Organization',
       name: 'ByGoodAI',
-      url: `${base}/`,
+      url: base ? `${base}/` : '/',
       logo: {
         '@type': 'ImageObject',
-        url: `${base}/og-image.png`,
+        url: base ? `${base}/og-image.png` : '/og-image.png',
       },
     },
     mainEntityOfPage: {
@@ -192,37 +190,21 @@ export function createArticleSchema(post: BlogPost): Record<string, any> {
   };
 }
 
-export function createTechArticleSchema(doc: { title: string; description: string; path: string }): Record<string, any> {
-  const base = getBaseUrl();
-  const docUrl = `${base}${doc.path}`;
-
-  return {
-    '@context': 'https://schema.org',
-    '@type': 'TechArticle',
-    headline: doc.title,
-    description: doc.description,
-    url: docUrl,
-    author: {
-      '@type': 'Organization',
-      name: 'ByGoodAI Engineering Team',
-    },
-    publisher: {
-      '@type': 'Organization',
-      name: 'ByGoodAI',
-      url: `${base}/`,
-    },
-  };
-}
-
 export function createBreadcrumbsSchema(breadcrumbs: BreadcrumbItem[]): Record<string, any> {
   const base = getBaseUrl();
 
-  const itemListElement = breadcrumbs.map((crumb, index) => ({
-    '@type': 'ListItem',
-    position: index + 1,
-    name: crumb.name,
-    item: crumb.url.startsWith('http') ? crumb.url : `${base}${crumb.url.startsWith('/') ? crumb.url : `/${crumb.url}`}`,
-  }));
+  const itemListElement = breadcrumbs.map((crumb, index) => {
+    let itemUrl = crumb.url;
+    if (!itemUrl.startsWith('http')) {
+      itemUrl = base ? `${base}${itemUrl.startsWith('/') ? itemUrl : `/${itemUrl}`}` : (itemUrl.startsWith('/') ? itemUrl : `/${itemUrl}`);
+    }
+    return {
+      '@type': 'ListItem',
+      position: index + 1,
+      name: crumb.name,
+      item: itemUrl,
+    };
+  });
 
   return {
     '@context': 'https://schema.org',
@@ -249,7 +231,9 @@ export function createFAQSchema(faqs: FAQItem[]): Record<string, any> {
 }
 
 /**
- * Updates DOM head elements imperatively on client side
+ * Updates DOM head elements imperatively on client side.
+ * Dynamic metadata is applied client-side.
+ * Ensures single source of truth and prevents duplicate tags.
  */
 export function updateDOMHead(meta: SEOMetadata): () => void {
   if (typeof document === 'undefined') {
@@ -257,75 +241,95 @@ export function updateDOMHead(meta: SEOMetadata): () => void {
   }
 
   // 1. Update Document Title
-  const brandTitle = meta.title.includes('ByGoodAI') ? meta.title : `${meta.title} | ByGoodAI`;
+  const rawTitle = meta.title || DEFAULT_SEO_TITLE;
+  const brandTitle = rawTitle.includes('ByGoodAI') ? rawTitle : `${rawTitle} | ByGoodAI`;
   document.title = brandTitle;
 
-  // Track dynamically injected tags for cleanup
-  const injectedElements: HTMLElement[] = [];
-
-  const setMetaTag = (attrName: 'name' | 'property', attrValue: string, content: string | undefined) => {
-    if (!content) return;
-    let element = document.querySelector(`meta[${attrName}="${attrValue}"]`) as HTMLMetaElement | null;
-    if (!element) {
-      element = document.createElement('meta');
-      element.setAttribute(attrName, attrValue);
-      document.head.appendChild(element);
-      injectedElements.push(element);
+  const setUniqueMetaTag = (attrName: 'name' | 'property', attrValue: string, content: string | undefined) => {
+    // Remove all existing tags with this selector to prevent duplicate accumulation
+    const existing = document.querySelectorAll(`meta[${attrName}="${attrValue}"]`);
+    if (!content) {
+      existing.forEach((el) => el.remove());
+      return;
     }
-    element.setAttribute('content', content);
+
+    if (existing.length > 0) {
+      existing[0].setAttribute('content', content);
+      for (let i = 1; i < existing.length; i++) {
+        existing[i].remove();
+      }
+    } else {
+      const el = document.createElement('meta');
+      el.setAttribute(attrName, attrValue);
+      el.setAttribute('content', content);
+      document.head.appendChild(el);
+    }
   };
 
-  const setLinkTag = (rel: string, href: string | undefined) => {
-    if (!href) return;
-    let element = document.querySelector(`link[rel="${rel}"]`) as HTMLLinkElement | null;
-    if (!element) {
-      element = document.createElement('link');
-      element.setAttribute('rel', rel);
-      document.head.appendChild(element);
-      injectedElements.push(element);
+  const setUniqueLinkTag = (rel: string, href: string | undefined) => {
+    const existing = document.querySelectorAll(`link[rel="${rel}"]`);
+    if (!href) {
+      existing.forEach((el) => el.remove());
+      return;
     }
-    element.setAttribute('href', href);
+
+    if (existing.length > 0) {
+      existing[0].setAttribute('href', href);
+      for (let i = 1; i < existing.length; i++) {
+        existing[i].remove();
+      }
+    } else {
+      const el = document.createElement('link');
+      el.setAttribute('rel', rel);
+      el.setAttribute('href', href);
+      document.head.appendChild(el);
+    }
   };
 
-  // 2. Canonical URL
+  // 2. Canonical URL (Deduplicated)
   const canonicalUrl = meta.canonicalPath
     ? getCanonicalUrl(meta.canonicalPath)
-    : getCanonicalUrl(window.location.pathname);
-  setLinkTag('canonical', canonicalUrl);
+    : getCanonicalUrl(typeof window !== 'undefined' ? window.location.pathname : '/');
+  setUniqueLinkTag('canonical', canonicalUrl);
 
-  // 3. Robots meta
+  // 3. Robots meta (Deduplicated)
   const robotsValue = meta.isPrivate ? 'noindex,nofollow' : meta.robots || 'index,follow';
-  setMetaTag('name', 'robots', robotsValue);
+  setUniqueMetaTag('name', 'robots', robotsValue);
 
-  // 4. Primary Description
-  setMetaTag('name', 'description', meta.description);
+  // 4. Primary Description (Deduplicated)
+  const description = meta.description || DEFAULT_SEO_DESCRIPTION;
+  setUniqueMetaTag('name', 'description', description);
 
   // 5. Open Graph tags
   const ogTitle = meta.ogTitle || brandTitle;
-  const ogDesc = meta.ogDescription || meta.description;
-  const defaultOgImage = `${getBaseUrl()}/og-image.png`;
-  const ogImage = meta.ogImage || defaultOgImage;
+  const ogDesc = meta.ogDescription || description;
   const ogUrl = meta.ogUrl || canonicalUrl;
+  const base = getBaseUrl();
+  const ogImage = meta.ogImage || (base ? `${base}/og-image.png` : '/og-image.png');
 
-  setMetaTag('property', 'og:site_name', 'ByGoodAI');
-  setMetaTag('property', 'og:type', meta.ogType || 'website');
-  setMetaTag('property', 'og:title', ogTitle);
-  setMetaTag('property', 'og:description', ogDesc);
-  setMetaTag('property', 'og:url', ogUrl);
-  setMetaTag('property', 'og:image', ogImage);
+  setUniqueMetaTag('property', 'og:site_name', 'ByGoodAI');
+  setUniqueMetaTag('property', 'og:type', meta.ogType || 'website');
+  setUniqueMetaTag('property', 'og:title', ogTitle);
+  setUniqueMetaTag('property', 'og:description', ogDesc);
+  setUniqueMetaTag('property', 'og:url', ogUrl);
+  if (ogImage) {
+    setUniqueMetaTag('property', 'og:image', ogImage);
+  }
 
   // 6. Twitter Card tags
   const twTitle = meta.twitterTitle || ogTitle;
   const twDesc = meta.twitterDescription || ogDesc;
   const twImage = meta.twitterImage || ogImage;
 
-  setMetaTag('name', 'twitter:card', meta.twitterCard || 'summary_large_image');
-  setMetaTag('name', 'twitter:title', twTitle);
-  setMetaTag('name', 'twitter:description', twDesc);
-  setMetaTag('name', 'twitter:image', twImage);
+  setUniqueMetaTag('name', 'twitter:card', meta.twitterCard || 'summary_large_image');
+  setUniqueMetaTag('name', 'twitter:title', twTitle);
+  setUniqueMetaTag('name', 'twitter:description', twDesc);
+  if (twImage) {
+    setUniqueMetaTag('name', 'twitter:image', twImage);
+  }
 
   // 7. Structured Data (JSON-LD)
-  // Remove previously injected jsonld
+  // Remove previously injected jsonld to prevent duplicate script tags
   const existingScripts = document.querySelectorAll('script[data-bygoodai-seo="true"]');
   existingScripts.forEach((s) => s.remove());
 
@@ -333,8 +337,8 @@ export function updateDOMHead(meta: SEOMetadata): () => void {
 
   if (meta.jsonLd) {
     if (Array.isArray(meta.jsonLd)) {
-      schemas.push(...meta.jsonLd.filter(Boolean));
-    } else if (typeof meta.jsonLd === 'object') {
+      schemas.push(...meta.jsonLd.filter((s) => s && typeof s === 'object' && Object.keys(s).length > 0));
+    } else if (typeof meta.jsonLd === 'object' && Object.keys(meta.jsonLd).length > 0) {
       schemas.push(meta.jsonLd);
     }
   }
@@ -350,12 +354,53 @@ export function updateDOMHead(meta: SEOMetadata): () => void {
       script.setAttribute('data-bygoodai-seo', 'true');
       script.textContent = JSON.stringify(schema);
       document.head.appendChild(script);
-      injectedElements.push(script);
     });
   }
 
   return () => {
     // Teardown / cleanup on view unmount
-    existingScripts.forEach((s) => s.remove());
+    const cleanupScripts = document.querySelectorAll('script[data-bygoodai-seo="true"]');
+    cleanupScripts.forEach((s) => s.remove());
+  };
+}
+
+/**
+ * Alias for updateDOMHead
+ */
+export const updateDocumentHead = updateDOMHead;
+
+/**
+ * Generates normalized SEO metadata object with fallbacks
+ */
+export function generateSeoMetadata(params: Partial<SEOMetadata> & { title?: string; description?: string }): SEOMetadata {
+  const rawTitle = params.title || DEFAULT_SEO_TITLE;
+  const title = rawTitle.includes('ByGoodAI') ? rawTitle : `${rawTitle} | ByGoodAI`;
+  const description = params.description || DEFAULT_SEO_DESCRIPTION;
+  const canonicalPath = params.canonicalPath || (typeof window !== 'undefined' ? window.location.pathname : '/');
+  const canonicalUrl = getCanonicalUrl(canonicalPath);
+  const base = getBaseUrl();
+  const defaultOgImage = base ? `${base}/og-image.png` : '/og-image.png';
+
+  return {
+    title,
+    description,
+    canonicalPath,
+    robots: params.robots || 'index,follow',
+    isPrivate: params.isPrivate,
+    ogType: params.ogType || 'website',
+    ogTitle: params.ogTitle || title,
+    ogDescription: params.ogDescription || description,
+    ogImage: params.ogImage || defaultOgImage,
+    ogUrl: params.ogUrl || canonicalUrl,
+    twitterCard: params.twitterCard || 'summary_large_image',
+    twitterTitle: params.twitterTitle || params.ogTitle || title,
+    twitterDescription: params.twitterDescription || params.ogDescription || description,
+    twitterImage: params.twitterImage || params.ogImage || defaultOgImage,
+    jsonLd: params.jsonLd,
+    breadcrumbs: params.breadcrumbs,
+    publishedTime: params.publishedTime,
+    modifiedTime: params.modifiedTime,
+    authorName: params.authorName,
+    tags: params.tags,
   };
 }

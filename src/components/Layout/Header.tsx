@@ -125,8 +125,8 @@ export const Header: React.FC<HeaderProps> = ({
             onClick={() => onNavigate('/')}
             className="flex items-center gap-2.5 cursor-pointer text-left group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 rounded-lg p-1"
           >
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-neutral-900 text-white font-bold tracking-wider text-base shadow-xs group-hover:bg-neutral-800 transition-colors">
-              Ω
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-neutral-900 text-sky-400 font-extrabold tracking-wider text-base shadow-xs group-hover:bg-neutral-800 transition-colors">
+              B
             </div>
             <div>
               <div className="flex items-center gap-1.5">

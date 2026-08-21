@@ -330,7 +330,7 @@ curl -X POST https://api.bygoodai.example/v1/tools/execute \\
   const breadcrumbItems = [
     { name: 'Tools', url: '/tools' },
     { name: tool.category, url: `/tools/${tool.category}` },
-    { name: tool.name, url: `/tools/${tool.slug}` },
+    { name: tool.name, url: `/tools/${tool.category}/${tool.slug}` },
   ];
 
   return (
@@ -338,7 +338,7 @@ curl -X POST https://api.bygoodai.example/v1/tools/execute \\
       <SEOHead
         title={`${tool.name} — Free Online Developer Tool | ByGoodAI`}
         description={`${tool.description} Fast, secure in-browser ${tool.name} with sub-5ms processing and zero data retention.`}
-        canonicalPath={`/tools/${tool.slug}`}
+        canonicalPath={`/tools/${tool.category}/${tool.slug}`}
         jsonLd={[
           createToolSchema(tool),
           createFAQSchema(tool.documentation?.faq || []),
